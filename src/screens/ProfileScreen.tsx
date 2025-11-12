@@ -13,6 +13,7 @@ import {
 import { useAuth } from '../contexts/AuthContext';
 import { usePosts } from '../contexts/PostContext';
 import { Post } from '../types';
+import colors from '../constants/colors';
 
 export default function ProfileScreen() {
   const { user, signOut } = useAuth();
@@ -86,7 +87,10 @@ export default function ProfileScreen() {
       ) : null}
 
       <View style={styles.postFooter}>
-        <Text style={styles.likes}>❤️ {item.likes} likes</Text>
+        <View style={styles.likeContainer}>
+          <Text style={styles.likeIcon}>❤️</Text>
+          <Text style={styles.likes}>{item.likes} likes</Text>
+        </View>
       </View>
     </View>
   );
@@ -107,6 +111,7 @@ export default function ProfileScreen() {
           <Text style={styles.statNumber}>{userPosts.length}</Text>
           <Text style={styles.statLabel}>Posts</Text>
         </View>
+        <View style={styles.statDivider} />
         <View style={styles.statItem}>
           <Text style={styles.statNumber}>
             {userPosts.reduce((sum, post) => sum + post.likes, 0)}
@@ -128,168 +133,208 @@ export default function ProfileScreen() {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#6366f1" />
-</View>
-);
+        <ActivityIndicator size="large" color={colors.primary} />
+      </View>
+    );
+  }
+
+  return (
+    <View style={styles.container}>
+      <FlatList
+        data={userPosts}
+        renderItem={renderPost}
+        keyExtractor={(item) => item.id}
+        ListHeaderComponent={ListHeader}
+        contentContainerStyle={styles.listContent}
+        ListEmptyComponent={
+          <View style={styles.emptyContainer}>
+            <Text style={styles.emptyIcon}>📝</Text>
+            <Text style={styles.emptyText}>No posts yet.</Text>
+            <Text style={styles.emptySubtext}>Tap the + button to create your first post!</Text>
+          </View>
+        }
+      />
+    </View>
+  );
 }
-return (
-<View style={styles.container}>
-<FlatList
-data={userPosts}
-renderItem={renderPost}
-keyExtractor={(item) => item.id}
-ListHeaderComponent={ListHeader}
-contentContainerStyle={styles.listContent}
-ListEmptyComponent={
-<View style={styles.emptyContainer}>
-<Text style={styles.emptyText}>No posts yet. Go to Feed to create your first post!</Text>
-</View>
-}
-/>
-</View>
-);
-}
+
 const styles = StyleSheet.create({
-container: {
-flex: 1,
-backgroundColor: '#f9fafb',
-},
-loadingContainer: {
-flex: 1,
-justifyContent: 'center',
-alignItems: 'center',
-},
-listContent: {
-paddingBottom: 20,
-},
-profileHeader: {
-backgroundColor: '#fff',
-padding: 20,
-alignItems: 'center',
-borderBottomWidth: 1,
-borderBottomColor: '#e5e7eb',
-},
-avatarLarge: {
-width: 80,
-height: 80,
-borderRadius: 40,
-backgroundColor: '#6366f1',
-justifyContent: 'center',
-alignItems: 'center',
-marginBottom: 15,
-},
-avatarTextLarge: {
-color: '#fff',
-fontSize: 36,
-fontWeight: 'bold',
-},
-displayName: {
-fontSize: 24,
-fontWeight: 'bold',
-color: '#111',
-marginBottom: 5,
-},
-email: {
-fontSize: 14,
-color: '#6b7280',
-marginBottom: 20,
-},
-statsContainer: {
-flexDirection: 'row',
-gap: 40,
-marginBottom: 20,
-},
-statItem: {
-alignItems: 'center',
-},
-statNumber: {
-fontSize: 22,
-fontWeight: 'bold',
-color: '#6366f1',
-},
-statLabel: {
-fontSize: 14,
-color: '#6b7280',
-marginTop: 5,
-},
-signOutButton: {
-backgroundColor: '#ef4444',
-paddingVertical: 12,
-paddingHorizontal: 40,
-borderRadius: 10,
-marginBottom: 20,
-},
-signOutButtonText: {
-color: '#fff',
-fontSize: 16,
-fontWeight: 'bold',
-},
-sectionHeader: {
-width: '100%',
-paddingVertical: 15,
-borderTopWidth: 1,
-borderTopColor: '#e5e7eb',
-},
-sectionTitle: {
-fontSize: 18,
-fontWeight: 'bold',
-color: '#111',
-},
-postCard: {
-backgroundColor: '#fff',
-borderRadius: 10,
-padding: 15,
-marginHorizontal: 15,
-marginTop: 15,
-shadowColor: '#000',
-shadowOffset: { width: 0, height: 1 },
-shadowOpacity: 0.1,
-shadowRadius: 2,
-elevation: 2,
-},
-postHeader: {
-flexDirection: 'row',
-justifyContent: 'space-between',
-alignItems: 'center',
-marginBottom: 12,
-},
-timestamp: {
-fontSize: 12,
-color: '#6b7280',
-},
-deleteButton: {
-color: '#ef4444',
-fontSize: 14,
-fontWeight: '600',
-},
-postContent: {
-fontSize: 16,
-color: '#374151',
-lineHeight: 24,
-marginBottom: 12,
-},
-postImage: {
-width: '100%',
-height: 250,
-borderRadius: 10,
-marginBottom: 12,
-},
-postFooter: {
-borderTopWidth: 1,
-borderTopColor: '#f3f4f6',
-paddingTop: 10,
-},
-likes: {
-fontSize: 14,
-color: '#6b7280',
-},
-emptyContainer: {
-padding: 40,
-alignItems: 'center',
-},
-emptyText: {
-fontSize: 16,
-color: '#9ca3af',
-textAlign: 'center',
-},
+  container: {
+    flex: 1,
+    backgroundColor: colors.background,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: colors.background,
+  },
+  listContent: {
+    paddingBottom: 100, // Extra space for FAB
+  },
+  profileHeader: {
+    backgroundColor: colors.backgroundSecondary,
+    padding: 20,
+    alignItems: 'center',
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+  },
+  avatarLarge: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: colors.primary,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 15,
+    borderWidth: 3,
+    borderColor: colors.black,
+  },
+  avatarTextLarge: {
+    color: colors.black,
+    fontSize: 48,
+    fontWeight: 'bold',
+  },
+  displayName: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: colors.textPrimary,
+    marginBottom: 5,
+  },
+  email: {
+    fontSize: 14,
+    color: colors.textMuted,
+    marginBottom: 20,
+  },
+  statsContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 20,
+    backgroundColor: colors.backgroundTertiary,
+    paddingVertical: 15,
+    paddingHorizontal: 40,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  statItem: {
+    alignItems: 'center',
+    paddingHorizontal: 20,
+  },
+  statDivider: {
+    width: 1,
+    height: 40,
+    backgroundColor: colors.border,
+  },
+  statNumber: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: colors.primary,
+  },
+  statLabel: {
+    fontSize: 12,
+    color: colors.textMuted,
+    marginTop: 5,
+    textTransform: 'uppercase',
+    fontWeight: '600',
+  },
+  signOutButton: {
+    backgroundColor: colors.error,
+    paddingVertical: 12,
+    paddingHorizontal: 40,
+    borderRadius: 10,
+    marginBottom: 20,
+  },
+  signOutButtonText: {
+    color: colors.white,
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  sectionHeader: {
+    width: '100%',
+    paddingVertical: 15,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: colors.primary,
+  },
+  postCard: {
+    backgroundColor: colors.backgroundTertiary,
+    borderRadius: 12,
+    padding: 15,
+    marginHorizontal: 15,
+    marginTop: 15,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  postHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  timestamp: {
+    fontSize: 12,
+    color: colors.textMuted,
+  },
+  deleteButton: {
+    color: colors.error,
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  postContent: {
+    fontSize: 16,
+    color: colors.textPrimary,
+    lineHeight: 24,
+    marginBottom: 12,
+  },
+  postImage: {
+    width: '100%',
+    height: 250,
+    borderRadius: 10,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  postFooter: {
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+    paddingTop: 10,
+  },
+  likeContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  likeIcon: {
+    fontSize: 16,
+    marginRight: 5,
+  },
+  likes: {
+    fontSize: 14,
+    color: colors.textMuted,
+    fontWeight: '600',
+  },
+  emptyContainer: {
+    padding: 60,
+    alignItems: 'center',
+  },
+  emptyIcon: {
+    fontSize: 64,
+    marginBottom: 20,
+  },
+  emptyText: {
+    fontSize: 18,
+    color: colors.textPrimary,
+    textAlign: 'center',
+    fontWeight: '600',
+    marginBottom: 8,
+  },
+  emptySubtext: {
+    fontSize: 14,
+    color: colors.textMuted,
+    textAlign: 'center',
+  },
 });

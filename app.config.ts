@@ -6,11 +6,11 @@ export default {
     version: "1.0.0",
     orientation: "portrait",
     icon: "./assets/icon.png",
-    userInterfaceStyle: "light",
+    userInterfaceStyle: "dark", // Changed to dark
     splash: {
       image: "./assets/splash.png",
       resizeMode: "contain",
-      backgroundColor: "#ffffff"
+      backgroundColor: "#000000" // Changed to black
     },
     updates: {
       url: "https://u.expo.dev/bb176fef-733c-4258-9ff3-5d9ece665e06"
@@ -31,17 +31,32 @@ export default {
     },
     ios: {
       supportsTablet: true,
-      bundleIdentifier: "com.kimathii.framez"
+      bundleIdentifier: "com.kimathii.framez",
+      infoPlist: {
+        UIViewControllerBasedStatusBarAppearance: true
+      }
     },
     android: {
       package: "com.kimathii.framez",
       adaptiveIcon: {
         foregroundImage: "./assets/adaptive-icon.png",
-        backgroundColor: "#ffffff"
+        backgroundColor: "#000000" // Changed to black
+      },
+      statusBar: {
+        backgroundColor: "#000000",
+        barStyle: "light-content"
       }
     },
     web: {
       favicon: "./assets/favicon.png"
-    }
+    },
+    plugins: [
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "The app needs access to your photos to let you share images in posts."
+        }
+      ]
+    ]
   }
 };

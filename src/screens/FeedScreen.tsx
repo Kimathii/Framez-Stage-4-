@@ -1,12 +1,11 @@
 // src/screens/FeedScreen.tsx
-import React, { useState } from 'react';
+import React from 'react';
 import {
   View,
   Text,
   FlatList,
   StyleSheet,
   TouchableOpacity,
-  TextInput,
   Alert,
   RefreshControl,
   ActivityIndicator,
@@ -15,63 +14,11 @@ import {
 import { usePosts } from '../contexts/PostContext';
 import { useAuth } from '../contexts/AuthContext';
 import { Post } from '../types';
-import { pickImage, uploadToCloudinary } from '../utils/imagePicker';
-import { CLOUDINARY_CONFIG } from '../../cloudinary.config';
+import colors from '../constants/colors';
 
 export default function FeedScreen() {
-  const { posts, loading, createPost, deletePost } = usePosts();
+  const { posts, loading, deletePost } = usePosts();
   const { user } = useAuth();
-  const [content, setContent] = useState('');
-  const [selectedImageUri, setSelectedImageUri] = useState<string | null>(null);
-  const [isCreating, setIsCreating] = useState(false);
-  const [isUploading, setIsUploading] = useState(false);
-
-  const handlePickImage = async () => {
-    const uri = await pickImage();
-    if (uri) {
-      setSelectedImageUri(uri);
-      console.log('🖼️  Image selected:', uri);
-    }
-  };
-
-  const handleRemoveImage = () => {
-    setSelectedImageUri(null);
-  };
-
-  const handleCreatePost = async () => {
-    if (!content.trim() && !selectedImageUri) {
-      Alert.alert('Error', 'Please add some content or an image');
-      return;
-    }
-
-    setIsCreating(true);
-    try {
-      let imageUrl: string | undefined;
-
-      // Upload image to Cloudinary if selected
-      if (selectedImageUri) {
-        setIsUploading(true);
-        imageUrl = await uploadToCloudinary(
-          selectedImageUri,
-          CLOUDINARY_CONFIG.cloudName,
-          CLOUDINARY_CONFIG.uploadPreset
-        );
-        setIsUploading(false);
-      }
-
-      // Create post with text and optional image URL
-      await createPost(content, imageUrl);
-      
-      // Reset form
-      setContent('');
-      setSelectedImageUri(null);
-      Alert.alert('Success', 'Post created!');
-    } catch (error: any) {
-      Alert.alert('Error', error.message);
-      setIsUploading(false);
-    }
-    setIsCreating(false);
-  };
 
   const handleDeletePost = (postId: string, userId: string) => {
     if (userId !== user?.uid) {
@@ -138,7 +85,10 @@ export default function FeedScreen() {
       ) : null}
 
       <View style={styles.postFooter}>
-        <Text style={styles.likes}>❤️ {item.likes} likes</Text>
+        <View style={styles.likeContainer}>
+          <Text style={styles.likeIcon}>❤️</Text>
+          <Text style={styles.likes}>{item.likes} likes</Text>
+        </View>
       </View>
     </View>
   );
@@ -146,74 +96,31 @@ export default function FeedScreen() {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#6366f1" />
+        <ActivityIndicator size="large" color={colors.primary} />
       </View>
     );
   }
 
   return (
     <View style={styles.container}>
-      <View style={styles.createPostSection}>
-        <TextInput
-          style={styles.input}
-          placeholder="What's on your mind?"
-          value={content}
-          onChangeText={setContent}
-          multiline
-          maxLength={500}
-        />
-
-        {selectedImageUri && (
-          <View style={styles.imagePreviewContainer}>
-            <Image
-              source={{ uri: selectedImageUri }}
-              style={styles.imagePreview}
-              resizeMode="cover"
-            />
-            <TouchableOpacity
-              style={styles.removeImageButton}
-              onPress={handleRemoveImage}
-            >
-              <Text style={styles.removeImageText}>✕</Text>
-            </TouchableOpacity>
-          </View>
-        )}
-
-        <View style={styles.buttonRow}>
-          <TouchableOpacity
-            style={styles.imageButton}
-            onPress={handlePickImage}
-            disabled={isCreating}
-          >
-            <Text style={styles.imageButtonText}>📷 Add Image</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity 
-            style={[
-              styles.postButton,
-              (isCreating || isUploading) && styles.postButtonDisabled
-            ]}
-            onPress={handleCreatePost}
-            disabled={isCreating || isUploading}
-          >
-            <Text style={styles.postButtonText}>
-              {isUploading ? 'Uploading...' : isCreating ? 'Posting...' : 'Post'}
-            </Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-
       <FlatList
         data={posts}
         renderItem={renderPost}
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.feed}
         refreshControl={
-          <RefreshControl refreshing={loading} onRefresh={() => {}} />
+          <RefreshControl 
+            refreshing={loading} 
+            onRefresh={() => {}}
+            tintColor={colors.primary}
+            colors={[colors.primary]}
+          />
         }
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>No posts yet. Be the first to post!</Text>
+            <Text style={styles.emptyIcon}>📝</Text>
+            <Text style={styles.emptyText}>No posts yet.</Text>
+            <Text style={styles.emptySubtext}>Tap the + button to create your first post!</Text>
           </View>
         }
       />
@@ -224,97 +131,25 @@ export default function FeedScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f9fafb',
+    backgroundColor: colors.background,
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  createPostSection: {
-    backgroundColor: '#fff',
-    padding: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: '#e5e7eb',
-  },
-  input: {
-    backgroundColor: '#f3f4f6',
-    padding: 15,
-    borderRadius: 10,
-    marginBottom: 10,
-    fontSize: 16,
-    minHeight: 80,
-    textAlignVertical: 'top',
-  },
-  imagePreviewContainer: {
-    position: 'relative',
-    marginBottom: 10,
-  },
-  imagePreview: {
-    width: '100%',
-    height: 200,
-    borderRadius: 10,
-  },
-  removeImageButton: {
-    position: 'absolute',
-    top: 10,
-    right: 10,
-    backgroundColor: 'rgba(0, 0, 0, 0.6)',
-    width: 30,
-    height: 30,
-    borderRadius: 15,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  removeImageText: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  buttonRow: {
-    flexDirection: 'row',
-    gap: 10,
-  },
-  imageButton: {
-    flex: 1,
-    backgroundColor: '#e5e7eb',
-    padding: 12,
-    borderRadius: 10,
-    alignItems: 'center',
-  },
-  imageButtonText: {
-    color: '#374151',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  postButton: {
-    flex: 1,
-    backgroundColor: '#6366f1',
-    padding: 12,
-    borderRadius: 10,
-    alignItems: 'center',
-  },
-  postButtonDisabled: {
-    backgroundColor: '#9ca3af',
-  },
-  postButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
+    backgroundColor: colors.background,
   },
   feed: {
     padding: 15,
+    paddingBottom: 100, // Extra space for FAB
   },
   postCard: {
-    backgroundColor: '#fff',
-    borderRadius: 10,
+    backgroundColor: colors.backgroundTertiary,
+    borderRadius: 12,
     padding: 15,
     marginBottom: 15,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
+    borderWidth: 1,
+    borderColor: colors.border,
   },
   postHeader: {
     flexDirection: 'row',
@@ -330,34 +165,36 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#6366f1',
+    backgroundColor: colors.primary,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 10,
+    borderWidth: 2,
+    borderColor: colors.black,
   },
   avatarText: {
-    color: '#fff',
+    color: colors.black,
     fontSize: 18,
     fontWeight: 'bold',
   },
   userName: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#111',
+    color: colors.textPrimary,
   },
   timestamp: {
     fontSize: 12,
-    color: '#6b7280',
+    color: colors.textMuted,
     marginTop: 2,
   },
   deleteButton: {
-    color: '#ef4444',
+    color: colors.error,
     fontSize: 14,
     fontWeight: '600',
   },
   postContent: {
     fontSize: 16,
-    color: '#374151',
+    color: colors.textPrimary,
     lineHeight: 24,
     marginBottom: 12,
   },
@@ -366,23 +203,45 @@ const styles = StyleSheet.create({
     height: 300,
     borderRadius: 10,
     marginBottom: 12,
+    borderWidth: 1,
+    borderColor: colors.border,
   },
   postFooter: {
     borderTopWidth: 1,
-    borderTopColor: '#f3f4f6',
+    borderTopColor: colors.border,
     paddingTop: 10,
+  },
+  likeContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  likeIcon: {
+    fontSize: 16,
+    marginRight: 5,
   },
   likes: {
     fontSize: 14,
-    color: '#6b7280',
+    color: colors.textMuted,
+    fontWeight: '600',
   },
   emptyContainer: {
-    padding: 40,
+    padding: 60,
     alignItems: 'center',
   },
+  emptyIcon: {
+    fontSize: 64,
+    marginBottom: 20,
+  },
   emptyText: {
-    fontSize: 16,
-    color: '#9ca3af',
+    fontSize: 18,
+    color: colors.textPrimary,
+    textAlign: 'center',
+    fontWeight: '600',
+    marginBottom: 8,
+  },
+  emptySubtext: {
+    fontSize: 14,
+    color: colors.textMuted,
     textAlign: 'center',
   },
 });

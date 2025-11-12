@@ -11,6 +11,7 @@ import {
   Alert
 } from 'react-native';
 import { useAuth } from '../contexts/AuthContext';
+import colors from '../constants/colors';
 
 export default function AuthScreen() {
   const [isSignUp, setIsSignUp] = useState(false);
@@ -49,37 +50,49 @@ export default function AuthScreen() {
       style={styles.container}
     >
       <View style={styles.formContainer}>
-        <Text style={styles.title}>Framez</Text>
+        <View style={styles.logoContainer}>
+          <Text style={styles.logo}>✨</Text>
+          <Text style={styles.title}>Framez</Text>
+        </View>
         <Text style={styles.subtitle}>
           {isSignUp ? 'Create your account' : 'Welcome back'}
         </Text>
 
         {isSignUp && (
-          <TextInput
-            style={styles.input}
-            placeholder="Display Name"
-            value={displayName}
-            onChangeText={setDisplayName}
-            autoCapitalize="words"
-          />
+          <View style={styles.inputContainer}>
+            <TextInput
+              style={styles.input}
+              placeholder="Display Name"
+              placeholderTextColor={colors.textMuted}
+              value={displayName}
+              onChangeText={setDisplayName}
+              autoCapitalize="words"
+            />
+          </View>
         )}
 
-        <TextInput
-          style={styles.input}
-          placeholder="Email"
-          value={email}
-          onChangeText={setEmail}
-          autoCapitalize="none"
-          keyboardType="email-address"
-        />
+        <View style={styles.inputContainer}>
+          <TextInput
+            style={styles.input}
+            placeholder="Email"
+            placeholderTextColor={colors.textMuted}
+            value={email}
+            onChangeText={setEmail}
+            autoCapitalize="none"
+            keyboardType="email-address"
+          />
+        </View>
 
-        <TextInput
-          style={styles.input}
-          placeholder="Password"
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry
-        />
+        <View style={styles.inputContainer}>
+          <TextInput
+            style={styles.input}
+            placeholder="Password"
+            placeholderTextColor={colors.textMuted}
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry
+          />
+        </View>
 
         <TouchableOpacity style={styles.button} onPress={handleAuth}>
           <Text style={styles.buttonText}>
@@ -87,11 +100,14 @@ export default function AuthScreen() {
           </Text>
         </TouchableOpacity>
 
-        <TouchableOpacity onPress={() => setIsSignUp(!isSignUp)}>
+        <TouchableOpacity onPress={() => setIsSignUp(!isSignUp)} style={styles.toggleContainer}>
           <Text style={styles.toggleText}>
             {isSignUp
-              ? 'Already have an account? Sign In'
-              : "Don't have an account? Sign Up"}
+              ? 'Already have an account? '
+              : "Don't have an account? "}
+          </Text>
+          <Text style={styles.toggleLink}>
+            {isSignUp ? 'Sign In' : 'Sign Up'}
           </Text>
         </TouchableOpacity>
       </View>
@@ -102,49 +118,73 @@ export default function AuthScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: colors.background,
   },
   formContainer: {
     flex: 1,
     justifyContent: 'center',
-    paddingHorizontal: 20,
+    paddingHorizontal: 30,
+  },
+  logoContainer: {
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  logo: {
+    fontSize: 64,
+    marginBottom: 10,
   },
   title: {
-    fontSize: 36,
+    fontSize: 42,
     fontWeight: 'bold',
     textAlign: 'center',
-    marginBottom: 10,
-    color: '#6366f1',
+    color: colors.primary,
+    letterSpacing: 2,
   },
   subtitle: {
     fontSize: 16,
     textAlign: 'center',
     marginBottom: 40,
-    color: '#666',
+    color: colors.textMuted,
+  },
+  inputContainer: {
+    marginBottom: 15,
   },
   input: {
-    backgroundColor: '#f3f4f6',
-    padding: 15,
-    borderRadius: 10,
-    marginBottom: 15,
+    backgroundColor: colors.backgroundTertiary,
+    padding: 16,
+    borderRadius: 12,
     fontSize: 16,
+    color: colors.textPrimary,
+    borderWidth: 1,
+    borderColor: colors.border,
   },
   button: {
-    backgroundColor: '#6366f1',
-    padding: 15,
-    borderRadius: 10,
+    backgroundColor: colors.primary,
+    padding: 16,
+    borderRadius: 12,
     marginTop: 10,
+    borderWidth: 2,
+    borderColor: colors.black,
   },
   buttonText: {
-    color: '#fff',
+    color: colors.black,
     textAlign: 'center',
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: 'bold',
+  },
+  toggleContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginTop: 25,
   },
   toggleText: {
     textAlign: 'center',
-    marginTop: 20,
-    color: '#6366f1',
+    color: colors.textMuted,
     fontSize: 14,
+  },
+  toggleLink: {
+    color: colors.primary,
+    fontSize: 14,
+    fontWeight: '600',
   },
 });
